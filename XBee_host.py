@@ -77,12 +77,10 @@ char = s.read(3)
 print("Exit AT mode.")
 print(char.decode())
 
-finish = 0
-while (finish):
+while (True):
     message = s.readline().decode()
     mqttc.publish(topic, message)
     print(message)
     time.sleep(1)
 
-s.close()
 
