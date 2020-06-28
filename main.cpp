@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "bbcar.h"
 
-#define left_v 6
+#define left_v 5.3
 #define right_v 6
 
 Ticker servo_ticker;
@@ -63,12 +63,13 @@ void check_addr(char *xbee_reply, char *messenger){
 int main()
 {
     double pwm_table0[] = {-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150};
-    double speed_table0[] = {-16.348, -16.030, -15.152, -12.281, -6.380, 0.000, 5.503, 11.563, 14.753, 15.950, 16.428};
+    double speed_table0[] = {-16.507, -16.029, -15.152, -12.201, -6.220, 0.000, 5.822, 11.803, 14.833, 15.950, 16.588};
     double pwm_table1[] = {-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150};
-    double speed_table1[] = {-15.790, -15.392, -14.514, -11.643, -5.582, 0.000, 6.459, 12.201, 14.913, 15.870, 16.349};
+    double speed_table1[] = {-15.949, -15.471, -14.514, -11.563, -5.503, 0.000, 6.619, 12.201, 15.072, 16.109, 16.508};
 
     // first and fourth argument: length of table
-    car.setCalibTable(11, pwm_table0, speed_table0, 11, pwm_table1, speed_table1);
+    car.setCalibTable(11, pwm_table0, speed_table0, 11, pwm_table1, speed_table1);  
+    car.stop();
     led1 = 1;
 
     // pc.baud(9600);
@@ -76,36 +77,36 @@ int main()
 
     // XBee setting
     xbee.baud(9600);
-    xbee.printf("+++");
-    xbee_reply[0] = xbee.getc();
-    xbee_reply[1] = xbee.getc();
-    if(xbee_reply[0] == 'O' && xbee_reply[1] == 'K'){
-        // pc.printf("enter AT mode.\r\n");
-        xbee_reply[0] = '\0';
-        xbee_reply[1] = '\0';
-    }
-    xbee.printf("ATMY 0x248\r\n");
-    reply_messange(xbee_reply, "setting MY : 0x248");
+    // xbee.printf("+++");
+    // xbee_reply[0] = xbee.getc();
+    // xbee_reply[1] = xbee.getc();
+    // if(xbee_reply[0] == 'O' && xbee_reply[1] == 'K'){
+    //     // pc.printf("enter AT mode.\r\n");
+    //     xbee_reply[0] = '\0';
+    //     xbee_reply[1] = '\0';
+    // }
+    // xbee.printf("ATMY 0x248\r\n");
+    // reply_messange(xbee_reply, "setting MY : 0x248");
 
-    xbee.printf("ATDL 0x148\r\n");
-    reply_messange(xbee_reply, "setting DL : 0x148");
+    // xbee.printf("ATDL 0x148\r\n");
+    // reply_messange(xbee_reply, "setting DL : 0x148");
 
-    xbee.printf("ATID 0x1\r\n");
-    reply_messange(xbee_reply, "setting PAN ID : 0x1");
+    // xbee.printf("ATID 0x1\r\n");
+    // reply_messange(xbee_reply, "setting PAN ID : 0x1");
 
-    xbee.printf("ATWR\r\n");
-    reply_messange(xbee_reply, "write config");
+    // xbee.printf("ATWR\r\n");
+    // reply_messange(xbee_reply, "write config");
 
-    xbee.printf("ATMY\r\n");
-    check_addr(xbee_reply, "MY");
+    // xbee.printf("ATMY\r\n");
+    // check_addr(xbee_reply, "MY");
 
-    xbee.printf("ATDL\r\n");
-    check_addr(xbee_reply, "DL");
+    // xbee.printf("ATDL\r\n");
+    // check_addr(xbee_reply, "DL");
 
-    xbee.printf("ATCN\r\n");
-    reply_messange(xbee_reply, "exit AT mode");
-    xbee.getc();
-    led1 = 0;
+    // xbee.printf("ATCN\r\n");
+    // reply_messange(xbee_reply, "exit AT mode");
+    // xbee.getc();
+    // led1 = 0;
 
     while (button == 1);
     led1 = 1;
@@ -115,8 +116,8 @@ int main()
     while ((float)ping1 > 20) {
         wait(0.01);
     }
-    led1 = 0;    
     car.stop();
+    led1 = 0;  
     
     // wait(1);
     char s[21];
@@ -150,23 +151,23 @@ int main()
     // }
     // printf("%f\r\n", deg);
 
-    // turn left to enter mission 1
+    // turn right to enter mission 1
     wait(1);
     led1 = 1;
-    xbee.printf("turn left\r\n");
-    rotate(left_v, -1, 1.5);
+    xbee.printf("turn right\r\n");
+    rotate(right_v, 1, 1.5);
 
     // go straight to the front of the parking space
     wait(1);
     led1 = 0;
     xbee.printf("walk straight\n");
-    go_cm(15, 55);
+    go_cm(-15, 55);
     led1 = 1;
     
-    // turn right 
+    // turn left
     wait(1);
     xbee.printf("start reverse parking\n");
-    rotate(right_v, 1, 1.5);
+    rotate(left_v, -1, 1.5);
 
     // reverse parking
     wait(1);
@@ -177,7 +178,7 @@ int main()
     // go out of the parking space
     wait(1);
     led1 = 0;
-    go_cm(15, 20);
+    go_cm(15, 12);
     led1 = 1;
 
     // turn left
@@ -186,29 +187,33 @@ int main()
 
     // go straight
     wait(1);
-    go_cm(10, 15);
+    go_cm(10, 10);
 
     // turn right
     wait(1);
     rotate(right_v, 1, 1.5);
 
     // image classification
+    // wait(1);
+    // led1 = 0;
+    // xbee.printf("image\r\n");
+    // sprintf(s, "image");
+    // uart.puts(s);
+    // int i = 0;
+    // while (1) {
+    //     if (uart.readable()) {
+    //         char recv = uart.getc();
+    //         if (recv == '\r') {
+    //             break;
+    //         }
+    //     }
+    // }
+    // xbee.printf("finish snapshot\r\n", s);
+    // led1 = 1;
+
+    // go straight
     wait(1);
-    led1 = 0;
-    xbee.printf("image\r\n");
-    sprintf(s, "image");
-    uart.puts(s);
-    int i = 0;
-    while (1) {
-        if (uart.readable()) {
-            char recv = uart.getc();
-            if (recv == '\r') {
-                break;
-            }
-        }
-    }
-    xbee.printf("finish snapshot\r\n", s);
-    led1 = 1;
+    go_cm(15, 5);
 
     // turn right
     wait(1);
@@ -218,13 +223,20 @@ int main()
     // leave mission 1
     wait(1);
     led1 = 0;
-    go_cm(15, 50);
+    go_cm(15, 45);
+
+    // turn right
+    wait(1);
+    // rotate(right_v, 1, 1.5);
+    car.turn(right_v, 1);
+    wait(3);
+    car.stop();
 
     // go to mission 2
     wait(1);
     xbee.printf("walk straight\r\n");
     car.goStraightCalib(15);
-    while ((float)ping1 > 20) {
+    while ((float)ping1 > 25) {
         wait(0.01);
     }
     led1 = 1;    
@@ -239,7 +251,7 @@ int main()
     wait(1);
     led1 = 0;
     xbee.printf("enter mission 2\r\n");
-    go_cm(15, 30);
+    go_cm(15, 35);
     led1 = 1;
 
     // turn right
