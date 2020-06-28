@@ -17,9 +17,12 @@ def on_connect(self, mosq, obj, rc):
 def on_message(mosq, obj, msg):
     global file, finish
     print("Current motion: " + str(msg.payload) + "\n")
-    file.write(str(msg.payload))
-    if (str(msg.payload) == "end"):
+    if (str(msg.payload) == 'end\r\n'):
+        file.write(str(msg.payload))
         finish = 1
+    else:
+        file.write(str(msg.payload) + "\n -> ")
+    print(finish)
 
 def on_subscribe(mosq, obj, mid, granted_qos):
     print("Subscribed OK")
@@ -43,7 +46,6 @@ file = open('log.txt', 'w')
 finish = False
 mqttc.loop()
 while not finish:
-    file.write(" -> ")
     mqttc.loop()
 
 file.close()
