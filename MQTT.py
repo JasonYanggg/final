@@ -1,7 +1,6 @@
-import paho.mqtt.client as paho
-import matplotlib.pyplot as plt
 import time
-import numpy as np
+import sys
+import paho.mqtt.client as paho
 
 mqttc = paho.Client()
 # Settings for connection
@@ -15,14 +14,13 @@ def on_connect(self, mosq, obj, rc):
     print("Connected rc: " + str(rc))
 
 def on_message(mosq, obj, msg):
-    global file, finish
+    global file, first
     print("Current motion: " + str(msg.payload) + "\n")
-    if (str(msg.payload) == 'end\r\n'):
-        file.write(str(msg.payload))
-        finish = 1
+    if (first == 0):
+        first = 1
+        file.write(str(msg.payload) + "\n")
     else:
         file.write(str(msg.payload) + "\n -> ")
-    print(finish)
 
 def on_subscribe(mosq, obj, mid, granted_qos):
     print("Subscribed OK")
@@ -43,9 +41,11 @@ mqttc.connect(host, port=1883, keepalive=60)
 mqttc.subscribe(topic, 0)
 
 file = open('log.txt', 'w')
-finish = False
-mqttc.loop()
-while not finish:
-    mqttc.loop()
-
-file.close()
+first = 0
+while True:
+    try:
+        mqttc.loop()
+    except KeyboardInterrupt:
+        file.close()
+        break
+print("Save file in log.txt")

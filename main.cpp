@@ -4,6 +4,8 @@
 #define left_v 5.3
 #define right_v 6
 
+RawSerial xbee(D12, D11);
+Serial uart(D1, D0);
 Ticker servo_ticker;
 Ticker encoder_ticker;
 PwmOut pin8(D8), pin9(D9);
@@ -11,9 +13,8 @@ DigitalIn button(SW2);
 DigitalIn pin3(D3);
 DigitalOut led1(LED1);
 DigitalInOut pin10(D10);
-Serial uart(D1, D0);
 // RawSerial pc(USBTX, USBRX);
-RawSerial xbee(D12, D11);
+
 
 BBCar car(pin8, pin9, servo_ticker);
 parallax_ping ping1(pin10);
@@ -62,6 +63,8 @@ void check_addr(char *xbee_reply, char *messenger){
 
 int main()
 {
+    xbee.baud(9600);
+
     double pwm_table0[] = {-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150};
     double speed_table0[] = {-16.507, -16.029, -15.152, -12.201, -6.220, 0.000, 5.822, 11.803, 14.833, 15.950, 16.588};
     double pwm_table1[] = {-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150};
@@ -76,37 +79,36 @@ int main()
     char xbee_reply[4];
 
     // XBee setting
-    xbee.baud(9600);
-    // xbee.printf("+++");
-    // xbee_reply[0] = xbee.getc();
-    // xbee_reply[1] = xbee.getc();
-    // if(xbee_reply[0] == 'O' && xbee_reply[1] == 'K'){
-    //     // pc.printf("enter AT mode.\r\n");
-    //     xbee_reply[0] = '\0';
-    //     xbee_reply[1] = '\0';
-    // }
-    // xbee.printf("ATMY 0x248\r\n");
-    // reply_messange(xbee_reply, "setting MY : 0x248");
+    xbee.printf("+++");
+    xbee_reply[0] = xbee.getc();
+    xbee_reply[1] = xbee.getc();
+    if(xbee_reply[0] == 'O' && xbee_reply[1] == 'K'){
+        // pc.printf("enter AT mode.\r\n");
+        xbee_reply[0] = '\0';
+        xbee_reply[1] = '\0';
+    }
+    xbee.printf("ATMY 0x248\r\n");
+    reply_messange(xbee_reply, "setting MY : 0x248");
 
-    // xbee.printf("ATDL 0x148\r\n");
-    // reply_messange(xbee_reply, "setting DL : 0x148");
+    xbee.printf("ATDL 0x148\r\n");
+    reply_messange(xbee_reply, "setting DL : 0x148");
 
-    // xbee.printf("ATID 0x1\r\n");
-    // reply_messange(xbee_reply, "setting PAN ID : 0x1");
+    xbee.printf("ATID 0x1\r\n");
+    reply_messange(xbee_reply, "setting PAN ID : 0x1");
 
-    // xbee.printf("ATWR\r\n");
-    // reply_messange(xbee_reply, "write config");
+    xbee.printf("ATWR\r\n");
+    reply_messange(xbee_reply, "write config");
 
-    // xbee.printf("ATMY\r\n");
-    // check_addr(xbee_reply, "MY");
+    xbee.printf("ATMY\r\n");
+    check_addr(xbee_reply, "MY");
 
-    // xbee.printf("ATDL\r\n");
-    // check_addr(xbee_reply, "DL");
+    xbee.printf("ATDL\r\n");
+    check_addr(xbee_reply, "DL");
 
-    // xbee.printf("ATCN\r\n");
-    // reply_messange(xbee_reply, "exit AT mode");
-    // xbee.getc();
-    // led1 = 0;
+    xbee.printf("ATCN\r\n");
+    reply_messange(xbee_reply, "exit AT mode");
+    xbee.getc();
+    led1 = 0;
 
     while (button == 1);
     led1 = 1;
@@ -160,74 +162,82 @@ int main()
     // go straight to the front of the parking space
     wait(1);
     led1 = 0;
-    xbee.printf("walk straight\n");
+    xbee.printf("walk back\r\n");
     go_cm(-15, 55);
     led1 = 1;
     
     // turn left
     wait(1);
-    xbee.printf("start reverse parking\n");
+    xbee.printf("turn left\r\n");
     rotate(left_v, -1, 1.5);
 
     // reverse parking
     wait(1);
     led1 = 0;
+    xbee.printf("start reverse parking\r\n");
     go_cm(-15, 25);
     led1 = 1;
 
     // go out of the parking space
     wait(1);
     led1 = 0;
+    xbee.printf("go out\r\n");
     go_cm(15, 12);
     led1 = 1;
 
     // turn left
     wait(1);
+    xbee.printf("turn left\r\n");
     rotate(left_v, -1, 1.5);
 
     // go straight
     wait(1);
+    xbee.printf("go straight");
     go_cm(10, 10);
 
     // turn right
     wait(1);
+    xbee.printf("turn right\r\n");
     rotate(right_v, 1, 1.5);
 
     // image classification
-    // wait(1);
-    // led1 = 0;
-    // xbee.printf("image\r\n");
-    // sprintf(s, "image");
-    // uart.puts(s);
-    // int i = 0;
-    // while (1) {
-    //     if (uart.readable()) {
-    //         char recv = uart.getc();
-    //         if (recv == '\r') {
-    //             break;
-    //         }
-    //     }
-    // }
-    // xbee.printf("finish snapshot\r\n", s);
-    // led1 = 1;
+    wait(1);
+    led1 = 0;
+    xbee.printf("image\r\n");
+    sprintf(s, "image");
+    uart.puts(s);
+    int i = 0;
+    while (1) {
+        if (uart.readable()) {
+            char recv = uart.getc();
+            if (recv == '\r') {
+                break;
+            }
+        }
+    }
+    xbee.printf("finish snapshot\r\n");
+    led1 = 1;
 
     // go straight
     wait(1);
+    xbee.printf("go straight\r\n");
     go_cm(15, 5);
 
     // turn right
     wait(1);
-    xbee.printf("leave mission 1\r\n");
+    xbee.printf("turn right\r\n");
     rotate(right_v, 1, 1.5);
 
     // leave mission 1
     wait(1);
     led1 = 0;
+    xbee.printf("leave mission 1\r\n");
     go_cm(15, 45);
 
     // turn right
     wait(1);
     // rotate(right_v, 1, 1.5);
+    xbee.printf("turn right\r\n");
     car.turn(right_v, 1);
     wait(3);
     car.stop();
@@ -316,11 +326,13 @@ int main()
 
     // turn left
     wait(1);
+    xbee.printf("turn left\r\n");
     rotate(left_v, -1, 1.5);
 
     // go straight
     wait(1);
     led1 = 0;
+    xbee.printf("go straight\r\n");
     car.goStraightCalib(15);
     while ((float)ping1 > 20) {
         wait(0.01);
@@ -330,13 +342,18 @@ int main()
 
     // turn right
     wait(1);
-    xbee.printf("end\r\n");
+    xbee.printf("turn right\r\n");
     rotate(right_v, 1, 1.5);
 
     // exit
     wait(1);
     led1 = 0;
-    go_cm(15, 100);
-    led1 = 1;
+    xbee.printf("exit\r\n");
+    car.goStraightCalib(15);
+    while ((float)ping1 > 20) {
+        wait(0.01);
+    }
+    led1 = 1;    
+    car.stop();
 
 }
