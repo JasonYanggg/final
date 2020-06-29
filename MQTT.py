@@ -20,7 +20,7 @@ def on_message(mosq, obj, msg):
         first = 1
         file.write(str(msg.payload) + "\n")
     else:
-        file.write(str(msg.payload) + "\n -> ")
+        file.write("-> " + str(msg.payload) + "\n")
 
 def on_subscribe(mosq, obj, mid, granted_qos):
     print("Subscribed OK")

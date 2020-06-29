@@ -1,7 +1,5 @@
 import serial
 import time
-import matplotlib.pyplot as plt
-import numpy as np
 import paho.mqtt.client as paho
 
 mqttc = paho.Client()

@@ -6,8 +6,6 @@
 
 RawSerial xbee(D12, D11);
 Serial uart(D1, D0);
-Ticker servo_ticker;
-Ticker encoder_ticker;
 PwmOut pin8(D8), pin9(D9);
 DigitalIn button(SW2);
 DigitalIn pin3(D3);
@@ -15,7 +13,8 @@ DigitalOut led1(LED1);
 DigitalInOut pin10(D10);
 // RawSerial pc(USBTX, USBRX);
 
-
+Ticker servo_ticker;
+Ticker encoder_ticker;
 BBCar car(pin8, pin9, servo_ticker);
 parallax_ping ping1(pin10);
 parallax_encoder encoder0(pin3, encoder_ticker);
@@ -37,34 +36,32 @@ void rotate(double speed, int dir, double time)
     car.stop();
 }
 
-void reply_messange(char *xbee_reply, char *messange){
-  xbee_reply[0] = xbee.getc();
-  xbee_reply[1] = xbee.getc();
-  xbee_reply[2] = xbee.getc();
-  if(xbee_reply[1] == 'O' && xbee_reply[2] == 'K'){
-    // pc.printf("%s\r\n", messange);
-    xbee_reply[0] = '\0';
-    xbee_reply[1] = '\0';
-    xbee_reply[2] = '\0';
-  }
-}
+// void reply_messange(char *xbee_reply, char *messange){
+//   xbee_reply[0] = xbee.getc();
+//   xbee_reply[1] = xbee.getc();
+//   xbee_reply[2] = xbee.getc();
+//   if(xbee_reply[1] == 'O' && xbee_reply[2] == 'K'){
+//     // pc.printf("%s\r\n", messange);
+//     xbee_reply[0] = '\0';
+//     xbee_reply[1] = '\0';
+//     xbee_reply[2] = '\0';
+//   }
+// }
 
-void check_addr(char *xbee_reply, char *messenger){
-  xbee_reply[0] = xbee.getc();
-  xbee_reply[1] = xbee.getc();
-  xbee_reply[2] = xbee.getc();
-  xbee_reply[3] = xbee.getc();
-//   pc.printf("%s = %c%c%c\r\n", messenger, xbee_reply[1], xbee_reply[2], xbee_reply[3]);
-  xbee_reply[0] = '\0';
-  xbee_reply[1] = '\0';
-  xbee_reply[2] = '\0';
-  xbee_reply[3] = '\0';
-}
+// void check_addr(char *xbee_reply, char *messenger){
+//   xbee_reply[0] = xbee.getc();
+//   xbee_reply[1] = xbee.getc();
+//   xbee_reply[2] = xbee.getc();
+//   xbee_reply[3] = xbee.getc();
+// //   pc.printf("%s = %c%c%c\r\n", messenger, xbee_reply[1], xbee_reply[2], xbee_reply[3]);
+//   xbee_reply[0] = '\0';
+//   xbee_reply[1] = '\0';
+//   xbee_reply[2] = '\0';
+//   xbee_reply[3] = '\0';
+// }
 
 int main()
 {
-    xbee.baud(9600);
-
     double pwm_table0[] = {-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150};
     double speed_table0[] = {-16.507, -16.029, -15.152, -12.201, -6.220, 0.000, 5.822, 11.803, 14.833, 15.950, 16.588};
     double pwm_table1[] = {-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150};
@@ -79,36 +76,37 @@ int main()
     char xbee_reply[4];
 
     // XBee setting
-    xbee.printf("+++");
-    xbee_reply[0] = xbee.getc();
-    xbee_reply[1] = xbee.getc();
-    if(xbee_reply[0] == 'O' && xbee_reply[1] == 'K'){
-        // pc.printf("enter AT mode.\r\n");
-        xbee_reply[0] = '\0';
-        xbee_reply[1] = '\0';
-    }
-    xbee.printf("ATMY 0x248\r\n");
-    reply_messange(xbee_reply, "setting MY : 0x248");
+    xbee.baud(9600);
+    // xbee.printf("+++");
+    // // xbee_reply[0] = xbee.getc();
+    // // xbee_reply[1] = xbee.getc();
+    // // if(xbee_reply[0] == 'O' && xbee_reply[1] == 'K'){
+    // //     // pc.printf("enter AT mode.\r\n");
+    // //     xbee_reply[0] = '\0';
+    // //     xbee_reply[1] = '\0';
+    // // }
+    // xbee.printf("ATMY 0x248\r\n");
+    // // reply_messange(xbee_reply, "setting MY : 0x248");
 
-    xbee.printf("ATDL 0x148\r\n");
-    reply_messange(xbee_reply, "setting DL : 0x148");
+    // xbee.printf("ATDL 0x148\r\n");
+    // // reply_messange(xbee_reply, "setting DL : 0x148");
 
-    xbee.printf("ATID 0x1\r\n");
-    reply_messange(xbee_reply, "setting PAN ID : 0x1");
+    // xbee.printf("ATID 0x1\r\n");
+    // // reply_messange(xbee_reply, "setting PAN ID : 0x1");
 
-    xbee.printf("ATWR\r\n");
-    reply_messange(xbee_reply, "write config");
+    // xbee.printf("ATWR\r\n");
+    // // reply_messange(xbee_reply, "write config");
 
-    xbee.printf("ATMY\r\n");
-    check_addr(xbee_reply, "MY");
+    // xbee.printf("ATMY\r\n");
+    // // check_addr(xbee_reply, "MY");
 
-    xbee.printf("ATDL\r\n");
-    check_addr(xbee_reply, "DL");
+    // xbee.printf("ATDL\r\n");
+    // // check_addr(xbee_reply, "DL");
 
-    xbee.printf("ATCN\r\n");
-    reply_messange(xbee_reply, "exit AT mode");
-    xbee.getc();
-    led1 = 0;
+    // xbee.printf("ATCN\r\n");
+    // // reply_messange(xbee_reply, "exit AT mode");
+    // // xbee.getc();
+    // led1 = 0;
 
     while (button == 1);
     led1 = 1;
