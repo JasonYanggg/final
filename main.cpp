@@ -10,6 +10,8 @@ PwmOut pin8(D8), pin9(D9);
 DigitalIn button(SW2);
 DigitalIn pin3(D3);
 DigitalOut led1(LED1);
+DigitalOut led2(LED2);
+DigitalOut led3(LED3);
 DigitalInOut pin10(D10);
 // RawSerial pc(USBTX, USBRX);
 
@@ -71,6 +73,8 @@ int main()
     car.setCalibTable(11, pwm_table0, speed_table0, 11, pwm_table1, speed_table1);  
     car.stop();
     led1 = 1;
+    led2 = 1;
+    led3 = 1;
 
     // pc.baud(9600);
     char xbee_reply[4];
@@ -219,7 +223,7 @@ int main()
     // go straight
     wait(1);
     xbee.printf("go straight\r\n");
-    go_cm(15, 5);
+    go_cm(10, 5);
 
     // turn right
     wait(1);
@@ -234,11 +238,8 @@ int main()
 
     // turn right
     wait(1);
-    // rotate(right_v, 1, 1.5);
     xbee.printf("turn right\r\n");
-    car.turn(right_v, 1);
-    wait(3);
-    car.stop();
+    rotate(right_v, 1, 1.5);
 
     // go to mission 2
     wait(1);
@@ -252,14 +253,17 @@ int main()
     
     // turn right
     wait(1);
+    // rotate(right_v, 1, 1.5);
     xbee.printf("turn right\r\n");
-    rotate(right_v, 1, 1.5);
+    car.turn(right_v, 1);
+    wait(3);
+    car.stop();
 
     // go straight
     wait(1);
     led1 = 0;
     xbee.printf("enter mission 2\r\n");
-    go_cm(15, 35);
+    go_cm(15, 32);
     led1 = 1;
 
     // turn right
@@ -271,11 +275,7 @@ int main()
     wait(1);
     led1 = 0;
     xbee.printf("go straight\r\n");
-    car.goStraightCalib(15);
-    while (float(ping1) > 20) {
-        wait(0.01);
-    }
-    car.stop();
+    go_cm(15, 25);
     led1 = 1;
 
     // scan
@@ -301,19 +301,28 @@ int main()
 
     // judge the object
     if (dis[0] - dis[1] > 5) {
+        led1 = 0;
         xbee.printf("the object is triangle\r\n");
     }
     else if (dis[0] - dis[1] > -5) {
         if (dis[1] > dis[2]) {
+            led2 = 0;
             xbee.printf("the object is right triangle\r\n");
         }
         else {
+            led3 = 0;
             xbee.printf("the object is square\r\n");
         }
     }
     else {
+        led1 = 0;
+        led3 = 0;
         xbee.printf("the object is concave\r\n");
     }
+    wait(5);
+    led1 = 1;
+    led2 = 1;
+    led3 = 1;
 
     // go back
     wait(1);
